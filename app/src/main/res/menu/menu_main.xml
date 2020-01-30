@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="es.b.playingwithandroidstudentsproject.MainActivity">
+    <item
+        android:id="@+id/home"
+        android:orderInCategory="100"
+        android:title="@string/home"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/nauActivity"
+        android:orderInCategory="100"
+        android:title="@string/nauActivity"
+        app:showAsAction="never" />
+</menu>

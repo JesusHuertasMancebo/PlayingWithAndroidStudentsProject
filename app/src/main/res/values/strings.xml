@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">PlayingWithAndroidStudentsProject</string>
+    <string name="action_settings">Settings</string>
+    <string name="home">Inici</string>
+    <string name="title_activity_la_meua_nau">LaMeuaNauActivity</string>
+    <string name="nauActivity">Nau Activity</string>
+</resources>
