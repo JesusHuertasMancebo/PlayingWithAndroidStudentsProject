@@ -9,9 +9,12 @@ import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.util.ArrayList;
 
 import androidx.annotation.RequiresApi;
 
@@ -21,27 +24,29 @@ public class LaMeuaNauSurfaceView extends SurfaceView implements SurfaceHolder.C
     private NauAnimationThread nauAnimationThread = null;
 
     //Background
-    Paint background = new Paint();
+    //Imatge per al fondo de pantalla
+    //Paint background = new Paint();
+
+    //ArrayList<String> balls = new ArrayList<String>();
 
     //Bola
     Paint ball = new Paint();
 
     //Imatge per a la Nau
-    //Paint nau = new Paint();
-    Bitmap nau = BitmapFactory.decodeResource(getResources(),R.drawable.ic_astronave);
+    Bitmap nau = BitmapFactory.decodeResource(getResources(),R.drawable.ic_nave);
 
     //Laser Nau
     Paint laserNau;
 
     //Valors Bola
-    private int x = 300;
-    private int y = 300 ;
+    private float x = 300;
+    private float y = 300 ;
     private static int radio = 40;
-    private static int colorBola = Color.BLUE;
+    private static int colorBola = Color.CYAN;
 
-    //Valors Velocitat
-    private int xDirection = 10;
-    private int yDirection = 10;
+    //Valors Velocitat de la Bola
+    private int xDirection = 30;
+    private int yDirection = 30;
 
     //Valors Nau
     private Drawable mIcon;
@@ -49,14 +54,12 @@ public class LaMeuaNauSurfaceView extends SurfaceView implements SurfaceHolder.C
     private float ultimaXNau, ultimaYNau;
 
     //Valors làser
-    private float xLaser, yLaser;
-    private float ample = 20;
-    private float alt = 80;
-    private float velocitatLaser = -16;
-    private float ultimXLaser, ultimYLaser;
+    private float xLaser,xLaser0, yLaser, yLaser0;
+    private int yDirectionLaser = -10;
 
-
-
+    private float ample = 15;
+    private float alt = 300;
+    Boolean dispararLaser = false;
 
     //Constructors
     public LaMeuaNauSurfaceView(Context context) {
@@ -64,7 +67,6 @@ public class LaMeuaNauSurfaceView extends SurfaceView implements SurfaceHolder.C
         getHolder().addCallback(this);
 
        laserNau = new Paint();
-       laserNau.setColor(Color.RED);
     }
 
     public LaMeuaNauSurfaceView(Context context, AttributeSet attrs) {
@@ -83,6 +85,7 @@ public class LaMeuaNauSurfaceView extends SurfaceView implements SurfaceHolder.C
     //Mètodes
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
+        //Li donem una posició a la nau
         xNau = (int) (0.25 * getWidth());
         yNau = (int) ((float) 0.90 * getHeight());
         if (nauAnimationThread!=null) {
@@ -91,7 +94,6 @@ public class LaMeuaNauSurfaceView extends SurfaceView implements SurfaceHolder.C
         nauAnimationThread = new NauAnimationThread(getHolder());
         nauAnimationThread.start();
     }
-
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
@@ -104,20 +106,32 @@ public class LaMeuaNauSurfaceView extends SurfaceView implements SurfaceHolder.C
 
     public void newDraw(Canvas canvas){
         //Pintar el Background
-        background.setColor(Color.WHITE);
-        canvas.drawRect(0,0,getWidth(),getHeight(),background);
-        //canvas.drawBitmap(R.drawable.ic_astronave,0.0,nau,0.0);
+        //Al final hem fet un bitmap per al background per a introduir una imatge
+        Bitmap background = BitmapFactory.decodeResource(getResources(),R.drawable.img_espacio);
+        float scale = (float)background.getHeight()/(float)getHeight();
+        int newWidth = Math.round(background.getWidth()/scale);
+        int newHeight = Math.round(background.getHeight()/scale);
+        Bitmap scaled = Bitmap.createScaledBitmap(background,newWidth,newHeight,true);
+
+        //if (canvas == null) {return;}
+        canvas.drawBitmap(scaled,0,0,null);
 
         //Pintar la Bola
         ball.setColor(colorBola);
         canvas.drawCircle(x,y,radio,ball);
 
         //Pintar la Nau
-        canvas.drawBitmap(nau,(float) xNau, (float) yNau,null);
+        canvas.drawBitmap(nau,(float) xNau -170, (float) yNau,null);
 
         //Pintar el làser de la nau
-        canvas.drawRect(xNau,yNau, xNau + ample, yNau + alt, laserNau);
-
+        if (dispararLaser) {
+            //Laser
+            laserNau.setColor(Color.RED);
+            canvas.drawRect(xLaser,yLaser, xLaser + ample, yLaser - alt, laserNau);
+        }else {
+            //Amaguem el làser
+            laserNau.setColor(Color.WHITE);
+        }
     }
 
     //Thread
@@ -129,9 +143,25 @@ public class LaMeuaNauSurfaceView extends SurfaceView implements SurfaceHolder.C
         }
         public void run() {
             while (!stop) {
-                //Moviment laser
-                yLaser -= yDirection;
 
+                //Moviment laser
+                //yLaser -= yDirection;
+                    if (dispararLaser){
+                        //Soles necesitem la y perque volem que el laser es desplaçe cap amunt
+                        //També representa la velocitat del làser
+                        yLaser -= 150;
+
+                        System.out.println("La Y " + y);
+                        System.out.println("yDIRECTION " + yDirection);
+                        System.out.println("YLASER " + yLaser);
+                        System.out.println("xNAU " + xNau);
+                        System.out.println("yNAU " + yNau);
+                        //Fem que rebote dalt
+                        /*if (yLaser < 0) {
+                            //Fem que desaparega la bala
+                            dispararLaser = false;
+                        }*/
+                    }
                 // Moviment de la bola
                 x += xDirection;
                 y += yDirection;
@@ -154,6 +184,7 @@ public class LaMeuaNauSurfaceView extends SurfaceView implements SurfaceHolder.C
                 if (y > getHeight() / 3 - radio) {
                     yDirection = -yDirection;
                 }
+
                 Canvas c = null;
                 try {
                     c = surfaceHolder.lockCanvas(null);
@@ -167,11 +198,7 @@ public class LaMeuaNauSurfaceView extends SurfaceView implements SurfaceHolder.C
                 }
             }
         }
-
     }
-
-    private long timeDown = 0;
-    private long timeUp;
     public boolean onTouchEvent(MotionEvent motionEvent){
         final int action = motionEvent.getAction();
         switch (action){
@@ -180,52 +207,48 @@ public class LaMeuaNauSurfaceView extends SurfaceView implements SurfaceHolder.C
                 ultimaXNau = motionEvent.getX();
                 ultimaYNau = motionEvent.getY();
 
-                yLaser = (int) motionEvent.getY();
-
+                //La nau anirà al punt on apretem en la pantalla per el seu eix X
+                xNau = motionEvent.getX();
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
                 //Calculem la distancia menejada
                 final float dx = motionEvent.getX() - ultimaXNau;
                 final float dy = motionEvent.getY() - ultimaYNau;
-
                 //Soles menejem en horizontal
                 xNau += dx;
-
+                //Evitem que la nau vaja per fora de la pantalla
+                if (xNau < 0) {
+                    xNau = 0;
+                }
+                if (xNau > getWidth()){
+                    xNau = 750;
+                }
                 //Recordem la posicio on hem tocat per al pròxim moviment
                 ultimaXNau = motionEvent.getX();
                 ultimaYNau = motionEvent.getY();
-
                 //Re pintar
                 invalidate();
                 break;
             }
             case MotionEvent.ACTION_UP: {
-                //final float dxLaser = motionEvent.getX() - ultimXLaser;
-                //final float dyLaser = motionEvent.getX() - ultimYLaser;
+                //Quan disparem la bola apareixerà en la posició 0
+                xLaser = xNau;
+                yLaser = yNau;
+                //yLaser = yDirection;
 
-                //El làser anirà en vertical
-                //yLaser += dyLaser;
+                System.out.println("yLaser ACTION_UP " + yLaser);
 
+                if(yLaser > x - radio && yLaser < x + radio){
 
+                        x = (int) 0;
 
-                timeUp = System.currentTimeMillis();
-
-                if (timeUp - timeDown > 3000 && timeDown > 0) {
-                    System.out.println("Simulation long click");
-                    //Move the circle to the left top position
-                    //x = 100;
-                    yLaser = 100;
-                } else {
-                    yLaser = (int) motionEvent.getY();
                 }
-
-
-                //invalidate();
+                //I fem que dispare
+                dispararLaser = true;
                 break;
             }
         }
         return true;
     }
-
 }

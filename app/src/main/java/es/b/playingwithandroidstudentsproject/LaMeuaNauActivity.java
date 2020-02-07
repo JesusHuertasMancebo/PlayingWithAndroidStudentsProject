@@ -8,11 +8,17 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
+import android.widget.Button;
 
-public class LaMeuaNauActivity extends MainMenu {
+public class LaMeuaNauActivity extends MainActivity {
+
 
     public static LaMeuaNauSurfaceView laMeuaNauSurfaceView;
+    public static LaMeuaNauSurfaceView.NauAnimationThread nauAnimationThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,5 +31,15 @@ public class LaMeuaNauActivity extends MainMenu {
         setContentView(laMeuaNauSurfaceView);
 
     }
+
+    /*protected void onPause(){
+        super.onPause();
+        Log.d("SurfaceView", "onPause");
+
+        //Evitem l´error al eixir de l´aplicació
+        if(laMeuaNauSurfaceView != null){
+            nauAnimationThread.stop = true;
+        }
+    }*/
 
 }
